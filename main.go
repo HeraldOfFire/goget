@@ -24,13 +24,6 @@ type Config struct {
 //Download file from URL
 func downloadFile(filepath string, url string) (err error) {
 
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
@@ -42,6 +35,13 @@ func downloadFile(filepath string, url string) (err error) {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
 
 	// Write the response body to file
 	_, err = io.Copy(out, resp.Body)
@@ -111,6 +111,7 @@ func main() {
 				err = downloadFile(filepath, url)
 				if err != nil {
 					fmt.Println(err)
+					return
 				}
 
 				fmt.Println("DONE -> " + filepath)
