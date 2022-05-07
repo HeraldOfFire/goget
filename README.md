@@ -1,2 +1,2 @@
 # goget
-A very simple multi-threaded file downloader in Go
+A very simple multi-threaded file downloader in Go 🤖
