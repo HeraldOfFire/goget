@@ -36,6 +36,8 @@ func downloadFile(filepath string, url string) (err error) {
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
+	fmt.Println("STARTED: " + filepath)
+
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -75,7 +77,7 @@ func main() {
 
 	conf, err := getConfig()
 	if err != nil {
-		fmt.Println("config.json not found")
+		fmt.Println("ERROR: config.json invalid or not found")
 		return
 	}
 
@@ -94,7 +96,7 @@ func main() {
 		//make directory if not present
 		os.MkdirAll(dirPath, os.ModePerm)
 
-		fmt.Println("DOWNLOADING FILES IN: " + dirPath)
+		fmt.Println("DOWNLOADING GROUP: " + dirPath)
 
 		//add slots in the waitgroup
 		wg.Add(len(urlVariables))
@@ -110,11 +112,11 @@ func main() {
 				//download requested files
 				err = downloadFile(filepath, url)
 				if err != nil {
-					fmt.Println(err)
+					fmt.Println("FAILED: " + filepath + " ERROR: " + err.Error())
 					return
 				}
 
-				fmt.Println("DONE -> " + filepath)
+				fmt.Println("DONE: " + filepath)
 
 			}(dirPath+"/"+urlVariables[j]+"."+fileFormat, strings.Replace(urlTemplate, "<<variable>>", urlVariables[j], 1))
 		}
