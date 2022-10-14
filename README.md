@@ -14,7 +14,7 @@ If a variable contains "->" is treated as an integer range of variables.
     "groups": [
         {
             "path": "GenericSeries",
-            "format": "mp4",
+            "format": ".mp4",
             "urlTemplate": "https://site.com/downloads/GenericSeries/GenericSeries_Ep_<<variable>>_SUB_ITA.mp4",
             "urlVariables": [
                 "01",
