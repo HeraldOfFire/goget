@@ -5,7 +5,7 @@ A very simple multi-threaded file downloader in Go 🤖
 Edit config.json file to define synchronous download groups.  
 Each group defines a URL template (the static part of the URL) and an array of variables.  
 goget makes asynchronous requests for each variable in a group.  
-If a variable contains "->" it's treated as an integer range of variables.
+If a variable contains "->" is treated as an integer range of variables.
 
 ### Example config.json file
 ```json
