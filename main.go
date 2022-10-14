@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -32,7 +33,7 @@ func downloadFile(filepath string, url string) (err error) {
 	defer resp.Body.Close()
 
 	// Check server response
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusMovedPermanently {
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
@@ -99,26 +100,62 @@ func main() {
 		fmt.Println("DOWNLOADING GROUP: " + dirPath)
 
 		//add slots in the waitgroup
-		wg.Add(len(urlVariables))
+		//wg.Add(len(urlVariables))
 
 		for j := 0; j < len(urlVariables); j++ {
 
-			//start a goroutine for each urlVariable
-			go func(filepath string, url string) {
+			//manage variables "from-to"
+			if strings.Contains(urlVariables[j], "->") {
 
-				//when all the goroutines are done, end the waitgroup
-				defer wg.Done()
+				fromTo := strings.Split(urlVariables[j], "->")
 
-				//download requested files
-				err = downloadFile(filepath, url)
-				if err != nil {
-					fmt.Println("FAILED: " + filepath + " ERROR: " + err.Error())
-					return
+				from, _ := strconv.Atoi(fromTo[0])
+				to, _ := strconv.Atoi(fromTo[1])
+
+				wg.Add(to-from)
+
+				for k := from; k <= to; k++ {
+
+					//start a goroutine for each urlVariable
+					go func(filepath string, url string) {
+	
+						//when all the goroutines are done, end the waitgroup
+						defer wg.Done()
+	
+						//download requested files
+						err = downloadFile(filepath, url)
+						if err != nil {
+							fmt.Println("FAILED: " + url + " ERROR: " + err.Error())
+							return
+						}
+	
+						fmt.Println("DONE: " + filepath)
+	
+					}(dirPath+"/"+fmt.Sprint(k)+fileFormat, strings.Replace(urlTemplate, "<<variable>>", fmt.Sprint(k), 1))
 				}
 
-				fmt.Println("DONE: " + filepath)
+			} else {
 
-			}(dirPath+"/"+urlVariables[j]+"."+fileFormat, strings.Replace(urlTemplate, "<<variable>>", urlVariables[j], 1))
+				wg.Add(1)
+
+				//start a goroutine for each urlVariable
+				go func(filepath string, url string) {
+
+					//when all the goroutines are done, end the waitgroup
+					defer wg.Done()
+
+					//download requested files
+					err = downloadFile(filepath, url)
+					if err != nil {
+						fmt.Println("FAILED: " + filepath + " ERROR: " + err.Error())
+						return
+					}
+
+					fmt.Println("DONE: " + filepath)
+
+				}(dirPath+"/"+urlVariables[j]+fileFormat, strings.Replace(urlTemplate, "<<variable>>", urlVariables[j], 1))
+			}
+
 		}
 		//wait for the goroutines in the waitgroup to end
 		wg.Wait()
